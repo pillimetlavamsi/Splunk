@@ -21,7 +21,7 @@ Visit the official Splunk download page and select the Windows `.msi` package.
  **Package Size:** ~1026 MB  
  **Supported OS:** Windows Server 2019, 2022, 2025 (64-bit)
 
-![Splunk Enterprise Download Page](s1.png)
+![Splunk Enterprise Download Page](./Images/Splunk_1.jpg)
 
 **Download steps:**
 1. Go to [splunk.com/download](https://www.splunk.com/en_us/download/splunk-enterprise.html)
@@ -51,7 +51,7 @@ http://localhost:8000
 
 Open your browser and navigate to `http://localhost:8000`. Enter the **username and password** you created during installation.
 
-![Splunk Enterprise Login Page](s2.png)
+![Splunk Enterprise Login Page](./Images/Splunk_2.jpg)
 
 **Login details (default):**
 
@@ -68,7 +68,7 @@ Open your browser and navigate to `http://localhost:8000`. Enter the **username 
 
 After a successful login, you will land on the **Splunk Home Dashboard** — the central hub for monitoring, searching, and auditing logs.
 
-![Splunk Enterprise Home Dashboard](s3.png)
+![Splunk Enterprise Home Dashboard](./Images/Splunk_3.jpg)
 
 From here you can:
 
@@ -96,7 +96,7 @@ wget -O splunkforwarder-10.2.2-80b90d638de6-linux-amd64.deb "https://download.sp
 ```
 
 
-![Downloading Splunk Forwarder via wget](s4.png)
+![Downloading Splunk Forwarder via wget](./Images/Splunk_4.jpg)
 
 **Note:** The `wget` command fetches the file from Splunk's CDN at `download.splunk.com`. A `200 OK` HTTP response confirms a successful connection and the file saves as `splunkforwarder-10.2.2-80b90d638de6-linux-amd64.deb`.
 
@@ -110,7 +110,7 @@ After the download completes, confirm the `.deb` file is present in your current
 ls
 ```
 
-![Directory listing showing the downloaded .deb file](s5.png)
+![Directory listing showing the downloaded .deb file](./Images/Splunk_5.jpg)
 
 You should see `splunkforwarder-10.2.2-80b90d638de6-linux-amd64.deb` listed among your files, confirming the download was successful.
 
@@ -124,7 +124,7 @@ Install the downloaded `.deb` package using the `dpkg` package manager:
 sudo dpkg -i splunkforwarder-10.2.2-80b90d638de6-linux-amd64.deb
 ```
 
-![Installing the .deb package with dpkg](s6.png)
+![Installing the .deb package with dpkg](./Images/Splunk_6.jpg)
 
 **What happens when this command is run:**
 - `dpkg` selects the previously unselected package `splunkforwarder`
@@ -144,8 +144,8 @@ Start the Splunk Forwarder for the first time and accept the license agreement:
 sudo /opt/splunkforwarder/bin/splunk start --accept-license
 ```
 
-![First-time start and credential creation](s7.png)
-![Splunk forwarder startup complete](s8.png)
+![First-time start and credential creation](./Images/Splunk_7.jpg)
+![Splunk forwarder startup complete](./Images/Splunk_8.jpg)
 
 **What happens when this command is run (Images 4 & 5 together):**
 - Since this is the **first time** running this version of Splunk, it requires creating an administrator account
@@ -165,7 +165,7 @@ To stop the forwarder at any point, run:
 sudo /opt/splunkforwarder/bin/splunk stop
 ```
 
-![Stopping the Splunk forwarder](s9.png)
+![Stopping the Splunk forwarder](./Images/Splunk_9.jpg)
 
 Splunk gracefully shuts down the `splunkd` daemon and all helper processes, confirming with `Done`.
 
@@ -175,11 +175,11 @@ Splunk gracefully shuts down the `splunkd` daemon and all helper processes, conf
 
 On the **Windows machine**, open Splunk Enterprise at `http://localhost:8000`, navigate to **Settings → Forwarding and Receiving → Indexes** to verify the existing indexes.
 
-![Splunk Enterprise — Indexes page](s10.png)
+![Splunk Enterprise — Indexes page](./Images/Splunk_10.jpg)
 
 Then navigate to **Settings → Forwarding and Receiving**.
 
-![Forwarding and Receiving page](s11.png)
+![Forwarding and Receiving page](./Images/Splunk_11.jpg)
 
 This page has two sections:
 - **Forward data** — to configure this instance to send data to another Splunk instance
@@ -191,7 +191,7 @@ Click **+ Add new** under **Receive data** → **Configure receiving** and enter
 Port: 9997
 ```
 
-![Adding receiving port 9997](s12.png)
+![Adding receiving port 9997](./Images/Splunk_12.jpg)
 
 ---
 
@@ -199,7 +199,7 @@ Port: 9997
 
 After saving, Splunk confirms that port **9997** has been successfully configured and is now **Enabled**.
 
-![Port 9997 enabled and active](s13.png)
+![Port 9997 enabled and active](./Images/Splunk_13.jpg)
 
 **Port 9997** is the industry-standard default port used by Splunk forwarders to send data to an indexer over TCP.
 
