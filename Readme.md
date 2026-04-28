@@ -215,7 +215,7 @@ sudo /opt/splunkforwarder/bin/splunk add forward-server 192.168.56.1:9997
 
 ![Adding forward-server pointing to Windows IP](./Images/Splunk_14.jpg)
 
-> The output `Added forwarding to: 192.168.56.1:9997` confirms that the forwarder now knows where to send data. The `tcp_conn_open_afux` warnings are socket-related informational messages and do not affect functionality.
+The output `Added forwarding to: 192.168.56.1:9997` confirms that the forwarder now knows where to send data. The `tcp_conn_open_afux` warnings are socket-related informational messages and do not affect functionality.
 
 ---
 
