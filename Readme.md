@@ -213,7 +213,7 @@ Back on the **Ubuntu machine**, configure the Universal Forwarder to forward all
 sudo /opt/splunkforwarder/bin/splunk add forward-server 192.168.56.1:9997
 ```
 
-![Adding forward-server pointing to Windows IP](s14.png)
+![Adding forward-server pointing to Windows IP](./Images/Splunk_14.jpg)
 
 > The output `Added forwarding to: 192.168.56.1:9997` confirms that the forwarder now knows where to send data. The `tcp_conn_open_afux` warnings are socket-related informational messages and do not affect functionality.
 
@@ -233,7 +233,7 @@ sudo /opt/splunkforwarder/bin/splunk add monitor /var/log/auth.log
 sudo /opt/splunkforwarder/bin/splunk add monitor /var/log/apt/history.log
 ```
 
-![Adding auth.log and apt history.log monitors](s15.png)
+![Adding auth.log and apt history.log monitors](./Images/Splunk_15.jpg)
 
 **What happens:**
 - `add monitor /var/log/auth.log` — Splunk registers `/var/log/auth.log` as a monitored input. This log records all authentication events such as SSH logins, `sudo` usage, and PAM session open/close events.
@@ -250,7 +250,7 @@ List all configured forward servers to confirm the forwarder is correctly pointi
 sudo /opt/splunkforwarder/bin/splunk list forward-server
 ```
 
-![Listing configured forward servers](s16.png)
+![Listing configured forward servers](./Images/Splunk_16.jpg)
 
 **Output breakdown:**
 - **Active forwards:** `192.168.56.1:9997` — The forwarder has an active TCP connection to the Splunk Enterprise instance on Windows at this IP and port.
@@ -266,7 +266,7 @@ On **Splunk Enterprise (Windows)**, open **Search & Reporting** and search the `
 index = "main"
 ```
 
-![Searching index=main in Splunk Enterprise](s17.png)
+![Searching index=main in Splunk Enterprise](./Images/Splunk_17.jpg)
 
 Splunk returns **307 events** from the past 24 hours, sourced from `/var/log/auth.log`. The events show `sudo` session open/close activity, PAM authentication records, and command history from the Ubuntu machine — all successfully forwarded in real time.
 
@@ -276,7 +276,7 @@ To search specifically for auth logs:
 source="/var/log/auth.log"
 ```
 
-![Filtering events by source=/var/log/auth.log](s18.png)
+![Filtering events by source=/var/log/auth.log](./Images/Splunk_18.jpg)
 
 This returns **311 events** from `/var/log/auth.log`, showing detailed authentication activity from the Ubuntu VM including CRON session events, sudo commands, and user session management — all indexed by Splunk Enterprise on Windows.
 
@@ -290,7 +290,7 @@ Add `/var/log/syslog` to capture system-level events from the Ubuntu machine:
 sudo /opt/splunkforwarder/bin/splunk add monitor /var/log/syslog
 ```
 
-![Adding /var/log/syslog monitor](s19.png)
+![Adding /var/log/syslog monitor](./Images/Splunk_20.jpg)
 
 The forwarder confirms: `Added monitor of '/var/log/syslog'`.
 
@@ -304,7 +304,7 @@ After adding new monitors, restart the forwarder to apply changes:
 sudo /opt/splunkforwarder/bin/splunk restart
 ```
 
-![Restarting Splunk forwarder](s20.png)
+![Restarting Splunk forwarder](./Images/Splunk_19.jpg)
 
 The restart process stops the running `splunkd`, runs all preflight checks (config validation, file integrity check, mgmt port check), and starts fresh — completing with `Done`. All newly added monitors (including syslog) are now active.
 
@@ -318,7 +318,7 @@ In Splunk Enterprise, search for syslog events:
 source="/var/log/syslog"
 ```
 
-![Syslog events shown in Splunk Enterprise](s21.png)
+![Syslog events shown in Splunk Enterprise](./Images/Splunk_21.jpg)
 
 Splunk returns **2,436 of 6,187 matched events** within the last 30-minute window from `/var/log/syslog`. The logs include system daemon activity, `snapd` service events, and kernel messages from the Ubuntu VM — all being forwarded and indexed in real time.
 
@@ -332,7 +332,7 @@ On the Ubuntu machine, run `ifconfig` to get the network interface details and i
 ifconfig
 ```
 
-![ifconfig output showing Ubuntu network interfaces](s22.png)
+![ifconfig output showing Ubuntu network interfaces](./Images/Splunk_23.jpg)
 
 The output shows multiple network interfaces including:
 - `br-d2cd43753dd3` — Docker bridge network: `192.168.49.1`
@@ -350,7 +350,7 @@ In Splunk Enterprise, filter syslog events by the Ubuntu VM's IP address `192.16
 source="/var/log/syslog" 192.168.49.1
 ```
 
-![Splunk logs filtered by Ubuntu IP address](s23.png)
+![Splunk logs filtered by Ubuntu IP address](./Images/Splunk_22.jpg)
 
 Splunk returns **17 events** related to this IP, including:
 - **UFW BLOCK** entries — Ubuntu's firewall blocking unsolicited inbound packets
