@@ -1,4 +1,4 @@
-## 📖 Introduction
+## Introduction
 
 ### What is an Nmap SYN Scan?
 
@@ -27,7 +27,7 @@ Without a SIEM, an Nmap SYN scan against your network could go completely unnoti
 
 ---
 
-## 🏗️ Architecture Overview
+## Architecture Overview
 
 ### Lab Environment
 
@@ -68,7 +68,7 @@ Without a SIEM, an Nmap SYN scan against your network could go completely unnoti
 
 
 
-## 🔎 Step 1 — Verifying IP Addresses
+## Step 1 — Verifying IP Addresses
 
 
 ### Kali Linux — `ip a`
@@ -80,8 +80,6 @@ ip a
 ```
 
 The output confirmed that the **eth1** interface was assigned the IP address `192.168.56.103` on the Host-Only network.
-
-> 📸 *Screenshot: `ip a` output on Kali Linux showing eth1 → 192.168.56.103*
 
 ---
 
@@ -96,8 +94,6 @@ ifconfig
 
 The **enp0s8** interface showed the IP address `192.168.56.104`, confirming it was on the same Host-Only network.
 
-> 📸 *Screenshot: `ifconfig` output on Ubuntu showing enp0s8 → 192.168.56.104*
-
 ---
 
 ### Windows Splunk Server — `ipconfig`
@@ -111,10 +107,8 @@ ipconfig
 
 The **VirtualBox Host-Only Network** adapter showed the IP address `192.168.56.1`, which serves as the Splunk Enterprise server address.
 
-> 📸 *Screenshot: `ipconfig` output on Windows showing VirtualBox Host-Only adapter → 192.168.56.1*
-
 ---
-## 🌐 Step 2 — Network Verification (Ping Test)
+## Step 2 — Network Verification (Ping Test)
 ![Nmap_SYN_Port_Scan](./Images/Nmap_Attack_4.jpg)
 
 Before performing any scanning, it was essential to verify that **Kali Linux** and **Ubuntu** could communicate with each other on the same Host-Only network.
@@ -124,29 +118,11 @@ A ping test was performed from Kali Linux to Ubuntu:
 ```bash
 ping 192.168.56.104
 ```
-
-### Output
-
-```
-PING 192.168.56.104 (192.168.56.104) 56(84) bytes of data.
-64 bytes from 192.168.56.104: icmp_seq=1 ttl=64 time=18.2 ms
-64 bytes from 192.168.56.104: icmp_seq=2 ttl=64 time=1.79 ms
-64 bytes from 192.168.56.104: icmp_seq=3 ttl=64 time=1.32 ms
-64 bytes from 192.168.56.104: icmp_seq=4 ttl=64 time=3.94 ms
-64 bytes from 192.168.56.104: icmp_seq=5 ttl=64 time=2.41 ms
-
---- 192.168.56.104 ping statistics ---
-5 packets transmitted, 5 received, 0% packet loss, time 4161ms
-rtt min/avg/max/mdev = 1.322/5.536/18.219/6.402 ms
-```
-
-✅ **0% packet loss** confirmed that both machines were reachable within the VirtualBox Host-Only network.
-
-> 📸 *Screenshot: Ping test from Kali Linux (192.168.56.103) to Ubuntu (192.168.56.104)*
+**0% packet loss** confirmed that both machines were reachable within the VirtualBox Host-Only network.
 
 ---
 
-## ⚙️ Step 3 — Splunk Universal Forwarder Setup
+## Step 3 — Splunk Universal Forwarder Setup
 ![Nmap_SYN_Port_Scan](./Images/Nmap_Attack_5.jpg)
 
 The **Splunk Universal Forwarder** was pre-installed on Ubuntu at `/opt/splunkforwarder/`. The forward server pointing to the Splunk Enterprise instance on Windows (`192.168.56.1:9997`) had already been configured.
@@ -160,29 +136,20 @@ sudo ./splunk list forward-server
 
 ---
 
-## ⚠️ Step 4 — Initial Problem: Inactive Forward Server
+## Step 4 — Initial Problem: Inactive Forward Server
 
 ### Problem Encountered
-![Nmap_SYN_Port_Scan](./Images/Nmap_Attack_6.jpg)
+
 
 When the forwarding status was checked, the output showed:
-
-```
-Active forwards:
-        None
-Configured but inactive forwards:
-        192.168.56.1:9997
-```
-
-> 📸 *Screenshot: Terminal output showing `192.168.56.1:9997` configured but inactive*
-
+![Nmap_SYN_Port_Scan](./Images/Nmap_Attack_6.jpg)
 ### Root Cause
 
 The forward server was **configured but inactive**, meaning the Splunk Universal Forwarder on Ubuntu was **unable to reach** the Splunk Enterprise server on Windows. After investigation, it was determined that **Windows Defender Firewall** was blocking all inbound TCP traffic on port **9997**, which is the default port used by Splunk forwarders to send data.
 
 ---
 
-## 🛡️ Step 5 — Fixing the Issue: Windows Defender Firewall Configuration
+## Step 5 — Fixing the Issue: Windows Defender Firewall Configuration
 
 To resolve the connectivity issue, a new **Inbound Rule** was created in **Windows Defender Firewall with Advanced Security** to allow TCP traffic on port 9997.
 
@@ -196,7 +163,6 @@ Navigate to:
 
 The firewall was active on the Public network profile, blocking all inbound connections by default.
 
-> 📸 *Screenshot: Windows Defender Firewall showing Public network — Incoming connections blocked*
 
 ---
 
@@ -207,16 +173,12 @@ Click on **Advanced settings** to open **Windows Defender Firewall with Advanced
 - Firewall is ON for Domain, Private, and Public profiles.
 - Inbound connections that do not match a rule are **blocked**.
 
-> 📸 *Screenshot: Windows Defender Firewall with Advanced Security overview*
-
 ---
 
 **Step 5.3 — Navigate to Inbound Rules**
 ![Nmap_SYN_Port_Scan](./Images/Nmap_Attack_9.jpg)
 
 Click on **Inbound Rules** in the left panel, then click **New Rule...** in the Actions panel on the right.
-
-> 📸 *Screenshot: Inbound Rules panel with New Rule option*
 
 ---
 
@@ -228,8 +190,6 @@ In the New Inbound Rule Wizard, select **Port** as the rule type.
 | Setting | Value |
 |---------|-------|
 | Rule Type | Port |
-
-> 📸 *Screenshot: New Inbound Rule Wizard — Rule Type set to "Port"*
 
 ---
 
@@ -243,8 +203,6 @@ Select **TCP** and specify **Specific local ports** as `9997`.
 | Protocol | TCP |
 | Specific local ports | 9997 |
 
-> 📸 *Screenshot: New Inbound Rule Wizard — TCP selected, port 9997 entered*
-
 ---
 
 **Step 5.6 — Action: Allow the Connection**
@@ -255,8 +213,6 @@ Select **Allow the connection** to permit Splunk forwarder traffic on port 9997.
 | Setting | Value |
 |---------|-------|
 | Action | Allow the connection |
-
-> 📸 *Screenshot: New Inbound Rule Wizard — "Allow the connection" selected*
 
 ---
 
@@ -271,8 +227,6 @@ Leave all three profiles checked so the rule applies regardless of network type.
 | Private | ✅ Yes |
 | Public | ✅ Yes |
 
-> 📸 *Screenshot: New Inbound Rule Wizard — All profiles (Domain, Private, Public) checked*
-
 ---
 
 **Step 5.8 — Name the Rule**
@@ -286,11 +240,9 @@ Name the rule `Splunk9997` to clearly identify it.
 
 Click **Finish** to create the rule.
 
-> 📸 *Screenshot: New Inbound Rule Wizard — Rule named "Splunk9997", ready to finish*
-
 ---
 
-## 🔄 Step 6 — Restarting Services
+## Step 6 — Restarting Services
 
 ### Restart Splunk Enterprise (Windows)
 
@@ -306,36 +258,6 @@ cd /opt/splunkforwarder/bin
 sudo ./splunk restart
 ```
 
-### Restart Output
-
-```
-Warning: Attempting to revert the SPLUNK_HOME ownership
-Warning: Executing "chown -R splunkfwd:splunkfwd /opt/splunkforwarder"
-Stopping splunkd...
-Shutting down.  Please wait, as this may take a few minutes.
-Stopping splunk helpers...
-Done.
-
-Splunk> The Notorious B.I.G. D.A.T.A.
-
-Checking prerequisites...
-        Checking mgmt port [8089]: open
-New certs have been generated in '/opt/splunkforwarder/etc/auth'.
-        Checking conf files for problems...
-        Done
-        Checking default conf files for edits...
-        Validating installed files...
-        All installed files intact.
-All preliminary checks passed.
-
-Starting splunk server daemon (splunkd)...
-Done
-```
-
-> 📸 *Screenshot: Ubuntu terminal showing successful Splunk forwarder restart*
-
----
-
 ## ✅ Step 7 — Successful Connection Verification
 ![Nmap_SYN_Port_Scan](./Images/Nmap_Attack_16.jpg)
 
@@ -345,18 +267,7 @@ After restarting both services, the forward server status was rechecked:
 sudo ./splunk list forward-server
 ```
 
-### Output (After Fix)
-
-```
-Active forwards:
-        192.168.56.1:9997
-Configured but inactive forwards:
-        None
-```
-
-> 📸 *Screenshot: Terminal showing `192.168.56.1:9997` now listed under Active forwards*
-
-🎉 The forward server status changed from **inactive → active**, confirming that the **Ubuntu Splunk Universal Forwarder** was successfully communicating with the **Windows Splunk Enterprise** server on port 9997.
+The forward server status changed from **inactive → active**, confirming that the **Ubuntu Splunk Universal Forwarder** was successfully communicating with the **Windows Splunk Enterprise** server on port 9997.
 
 **The root cause** (Windows Defender Firewall blocking port 9997) was fully resolved by adding the `Splunk9997` inbound rule.
 
@@ -395,32 +306,11 @@ Kali Linux                          Ubuntu (Victim)
 | Packets Sent | TCP SYN |
 | Open Port Response | SYN-ACK (then RST sent by attacker) |
 | Closed Port Response | RST |
-| Handshake Completed? | ❌ No |
+| Handshake Completed? |  No |
 
-> ⚠️ SYN scans require **root/sudo** privileges because they require raw socket access.
+> SYN scans require **root/sudo** privileges because they require raw socket access.
 
 ---
-
-## 📊 Step 9 — Scan Results
-
-
-### Nmap Output
-
-```
-Starting Nmap 7.95 ( https://nmap.org ) at 2026-05-06 11:12 IST
-Nmap scan report for 192.168.56.104
-Host is up (0.032s latency).
-Not shown: 997 filtered tcp ports (no-response)
-PORT    STATE   SERVICE
-22/tcp  open    ssh
-80/tcp  closed  http
-443/tcp closed  https
-MAC Address: 08:00:27:98:91:15 (PCS Systemtechnik/Oracle VirtualBox virtual NIC)
-
-Nmap done: 1 IP address (1 host up) scanned in 21.96 seconds
-```
-
-> 📸 *Screenshot: Nmap SYN scan results from Kali Linux terminal*
 
 ### Analysis of Results
 
@@ -434,7 +324,7 @@ The 997 filtered ports returned no response, indicating they are behind a firewa
 
 ---
 
-## 📦 Step 10 — Log Collection Process
+## Step 9 — Log Collection Process
 
 When the Nmap SYN scan was executed, the following log collection pipeline was triggered:
 
@@ -458,9 +348,9 @@ Each SYN packet to a different destination port generated a **separate log entry
 
 ---
 
-## 🔍 Step 11 — Searching Logs in Splunk Enterprise
+## Step 10 — Searching Logs in Splunk Enterprise
 ![Nmap_SYN_Port_Scan](./Images/Nmap_Attack_18.jpg)
-![Nmap_SYN_Port_Scan](./Images/Nmap_Attack_19.jpg)
+
 
 ### Search by Attacker IP
 
@@ -480,13 +370,12 @@ source="/var/log/syslog"
 
 This search confirmed all logs were sourced from the Ubuntu machine's syslog file, forwarded by the Universal Forwarder.
 
-> 📸 *Screenshot: Splunk Enterprise Search showing 20 events from 192.168.56.103 with UFW BLOCK entries in /var/log/syslog*
-
 ---
 
-## 🧪 Step 12 — Log Analysis
+## Step 11 — Log Analysis
 
 ### Sample Log Entry
+![Nmap_SYN_Port_Scan](./Images/Nmap_Attack_19.jpg)
 
 ```
 2026-05-06T11:12:15.819062+05:30 vamsi-VirtualBox kernel: 
@@ -525,7 +414,7 @@ The critical indicator in these logs is the **`DPT` (Destination Port) field**. 
 
 ---
 
-## 🏁 Conclusion
+## Conclusion
 
 This lab successfully demonstrated the complete lifecycle of an **Nmap SYN Port Scan attack** — from execution to detection using **Splunk Enterprise** as a SIEM platform.
 
@@ -558,7 +447,7 @@ This lab simulates a complete security monitoring pipeline — a network with mu
 
 ---
 
-## 🛠️ Tools & Technologies Used
+## Tools & Technologies Used
 
 | Tool | Version / Details | Purpose |
 |------|-------------------|---------|
