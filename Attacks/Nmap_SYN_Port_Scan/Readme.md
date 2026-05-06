@@ -13,6 +13,9 @@ Because the TCP handshake is never completed, this scan is considered "stealthy"
 ### What is Splunk Enterprise?
 
 **Splunk Enterprise** is a powerful Security Information and Event Management (SIEM) platform that collects, indexes, and correlates machine-generated data from various sources in real time. It provides a web-based interface for searching, monitoring, and analyzing log data, making it an industry-standard tool for threat detection and incident response.
+### What is Splunk Forwarder?
+**Splunk Universal Forwarder** is a lightweight log collection agent installed on endpoint systems to collect and forward machine data to Splunk Enterprise for centralized monitoring and analysis. In this project, Splunk Universal Forwarder was installed on the Ubuntu victim machine to monitor system log files and securely send the generated logs to the Splunk Enterprise server running on Windows. It plays a crucial role in real-time log forwarding and enables continuous security event monitoring within the SIEM environment.
+
 
 ### Why is SIEM Monitoring Important?
 
@@ -36,6 +39,8 @@ Without a SIEM, an Nmap SYN scan against your network could go completely unnoti
 | 🔴 Attacker | Kali Linux | `192.168.56.103` |
 | 🟡 Victim / Log Source | Ubuntu (with Splunk Universal Forwarder) | `192.168.56.104` |
 | 🟢 SIEM Server | Windows (Splunk Enterprise) | `192.168.56.1` |
+
+---
 
 ### Log Flow Diagram
 
@@ -66,13 +71,14 @@ Without a SIEM, an Nmap SYN scan against your network could go completely unnoti
 ```
 
 
-
+---
 
 ## Step 1 — Verifying IP Addresses
 
 
 ### Kali Linux — `ip a`
 ![Nmap_SYN_Port_Scan](./Images/Nmap_Attack_1.jpg)
+
 The IP address of the Kali Linux attacker machine was verified using:
 
 ```bash
@@ -127,18 +133,18 @@ ping 192.168.56.104
 
 The **Splunk Universal Forwarder** was pre-installed on Ubuntu at `/opt/splunkforwarder/`. The forward server pointing to the Splunk Enterprise instance on Windows (`192.168.56.1:9997`) had already been configured.
 
-To verify the current forwarding status, the following command was run from the Splunk forwarder binary directory:
 
-```bash
-cd /opt/splunkforwarder/bin
-sudo ./splunk list forward-server
-```
 
 ---
 
 ## Step 4 — Initial Problem: Inactive Forward Server
 
 ### Problem Encountered
+To verify the current forwarding status, the following command was run from the Splunk forwarder binary directory:
+
+```bash
+sudo /opt/splunkforwarder/bin/splunk list forward-server
+```
 
 
 When the forwarding status was checked, the output showed:
@@ -257,8 +263,8 @@ The Splunk forwarder was restarted on Ubuntu using:
 cd /opt/splunkforwarder/bin
 sudo ./splunk restart
 ```
-
-## ✅ Step 7 — Successful Connection Verification
+---
+## Step 7 — Successful Connection Verification
 ![Nmap_SYN_Port_Scan](./Images/Nmap_Attack_16.jpg)
 
 After restarting both services, the forward server status was rechecked:
@@ -273,7 +279,7 @@ The forward server status changed from **inactive → active**, confirming that 
 
 ---
 
-## 💻 Step 8 — Performing the Nmap SYN Scan
+## Step 8 — Performing the Nmap SYN Scan
 ![Nmap_SYN_Port_Scan](./Images/Nmap_Attack_17.jpg)
 
 With the logging infrastructure confirmed to be working, the Nmap SYN scan was launched from **Kali Linux** against the **Ubuntu victim machine**.
@@ -308,7 +314,7 @@ Kali Linux                          Ubuntu (Victim)
 | Closed Port Response | RST |
 | Handshake Completed? |  No |
 
-> SYN scans require **root/sudo** privileges because they require raw socket access.
+SYN scans require **root/sudo** privileges because they require raw socket access.
 
 ---
 
@@ -410,54 +416,6 @@ The critical indicator in these logs is the **`DPT` (Destination Port) field**. 
 - **Different destination ports** in rapid succession
 - **SYN flag** present in every packet
 
-...is the textbook signature of an **Nmap SYN port scan**. The Splunk SIEM successfully captured and displayed all of this evidence in a single searchable interface.
-
----
-
-## Conclusion
-
-This lab successfully demonstrated the complete lifecycle of an **Nmap SYN Port Scan attack** — from execution to detection using **Splunk Enterprise** as a SIEM platform.
-
-### Key Achievements
-
-| Achievement | Status |
-|-------------|--------|
-| Network connectivity verified between all VMs | ✅ |
-| Splunk Universal Forwarder installed on Ubuntu | ✅ |
-| Windows Firewall port 9997 opened for log forwarding | ✅ |
-| Forwarder successfully connected to Splunk Enterprise | ✅ |
-| Nmap SYN scan executed from Kali Linux | ✅ |
-| Scan logs captured in Ubuntu syslog | ✅ |
-| Logs forwarded to Splunk Enterprise in real time | ✅ |
-| SYN scan pattern identified in Splunk search | ✅ |
-
-### Key Lessons Learned
-
-**1. Firewall Configuration is Critical for SIEM Functionality**
-The initial failure of log forwarding was caused by **Windows Defender Firewall blocking port 9997**. This highlights that even the defensive infrastructure itself must be properly configured — an incorrectly configured SIEM is as bad as no SIEM at all.
-
-**2. SYN Scans Leave Clear Evidence in Kernel Logs**
-Despite being called a "stealth scan," the Nmap SYN scan generated distinct `[UFW BLOCK]` entries in `/var/log/syslog` for every port probed. The `SYN` flag and rapidly changing `DPT` values across entries from the same source IP are unmistakable indicators of reconnaissance.
-
-**3. SIEM Monitoring Provides Actionable Intelligence**
-Splunk's ability to search, filter, and correlate 20 log events in real time demonstrates how a SIEM transforms raw log noise into actionable security intelligence. Without Splunk, this attack may have been buried in system logs and gone unnoticed.
-
-**4. Defense-in-Depth Works**
-This lab simulates a complete security monitoring pipeline — a network with multiple layers (host-based firewall, log forwarding, SIEM analysis) where each layer contributes to overall visibility and protection.
-
----
-
-## Tools & Technologies Used
-
-| Tool | Version / Details | Purpose |
-|------|-------------------|---------|
-| Oracle VirtualBox | Host-Only Network | Lab environment isolation |
-| Kali Linux | Rolling | Attacker machine |
-| Ubuntu | 22.04 LTS | Victim / log source machine |
-| Windows | Windows 10/11 | Splunk Enterprise host |
-| Nmap | 7.95 | SYN port scanning |
-| Splunk Universal Forwarder | 10.2.2 | Log shipping from Ubuntu |
-| Splunk Enterprise | Latest | SIEM — log indexing and analysis |
-| Windows Defender Firewall | Built-in | Inbound rule configuration |
+The Splunk SIEM successfully captured and displayed all of this evidence in a single searchable interface.
 
 ---
