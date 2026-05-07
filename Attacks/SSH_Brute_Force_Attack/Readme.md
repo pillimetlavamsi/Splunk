@@ -18,7 +18,7 @@ This lab simulates a real-world SSH brute force attack scenario. The key learnin
 | Ubuntu VM             | Ubuntu 24.04.4 LTS     | Victim SSH Server             | 192.168.56.104   |
 | Splunk Enterprise     | Splunk Enterprise 9.x  | SIEM Monitoring Server        | 192.168.56.1   |
 
-> All machines are connected over a **Host-Only network** (`192.168.56.0/24`) in VirtualBox to simulate an isolated internal network.
+All machines are connected over a **Host-Only network** (`192.168.56.0/24`) in VirtualBox to simulate an isolated internal network.
 
 ---
 
@@ -75,17 +75,21 @@ sudo systemctl status ssh
 ### 1.2 — Installing OpenSSH Server
 
 The screenshot below shows the output of `sudo apt install openssh-server -y` on the Ubuntu VM. The system reports that `openssh-server` is already at the newest version (`1:9.6p1-3ubuntu13.16`), confirming the package is installed and ready.
-
+```bash
+sudo apt install openssh-server -y
+```
 ![SSH Brute Force](./Images/SSH_B_F_1.jpg)
 
-> If you see `0 upgraded, 0 newly installed` it means the package was already present. The SSH server is ready to use.
+If you see `0 upgraded, 0 newly installed` it means the package was already present. The SSH server is ready to use.
 
 ---
 
 ### 1.3 — Verifying SSH Service Status
 
 After installation, we verify the SSH service is actively running using `sudo systemctl status ssh`.
-
+```bash
+sudo systemctl status ssh
+```
 ![SSH Brute Force](./Images/SSH_B_F_2.jpg)
 
 **Key indicators to look for in this output:**
@@ -95,18 +99,16 @@ After installation, we verify the SSH service is actively running using `sudo sy
 - `Server listening on :: port 22` — Also listening on IPv6
 - `Loaded: enabled` — Will persist across reboots
 
-> The service started at `09:09:06 IST` and has been running for 8 minutes, confirming a healthy SSH setup.
+The service started at `09:09:06 IST` and has been running for 8 minutes, confirming a healthy SSH setup.
 
 ---
 
 ### 1.4 — Finding Ubuntu's IP Address
 
-To connect from Kali Linux, we need the Ubuntu VM's IP address. Run `ifconfig` or `ip a` on Ubuntu:
+To connect from Kali Linux, we need the Ubuntu VM's IP address. Run `ifconfig` on Ubuntu:
 
 ```bash
 ifconfig
-# or
-ip a
 ```
 
 ![SSH Brute Force](./Images/SSH_B_F_4.jpg)
@@ -115,9 +117,8 @@ ip a
 
 - Interface `enp0s8` has the IP `192.168.56.104` — this is on the Host-Only network (`192.168.56.0/24`)
 - This is the IP that Kali Linux will use to connect via SSH
-- `enp0s3` handles NAT/internet traffic and is separate from our lab network
 
-> **Ubuntu Victim IP: `192.168.56.104`** — note this down; it will be used throughout the lab.
+**Ubuntu Victim IP: `192.168.56.104`** — note this down; it will be used throughout the lab.
 
 ---
 
@@ -135,9 +136,8 @@ ip a
 
 - Interface `eth1` has IP `192.168.56.103` — same `/24` subnet as Ubuntu
 - Both machines can communicate directly over this Host-Only network
-- `eth0` is the NAT interface for internet access (not used for the attack simulation)
 
->  **Kali Attacker IP: `192.168.56.103`** — both machines are now on the same subnet and can reach each other.
+**Kali Attacker IP: `192.168.56.103`** — both machines are now on the same subnet and can reach each other.
 
 ---
 
@@ -147,7 +147,7 @@ Before simulating brute force, confirm that SSH connectivity works correctly bet
 
 ### 2.1 — Connecting via SSH
 
-On the **Kali Linux VM**, run:
+On the **Kali Linux VM**, open the terminal and run the below command:
 
 ```bash
 ssh vamsi@192.168.56.104
@@ -165,13 +165,13 @@ ssh vamsi@192.168.56.104
 5. **Successful login** — Ubuntu 24.04.4 LTS welcome banner is displayed
 6. **Session active** — Prompt changes to `vamsi@vamsi-VirtualBox:~$`, confirming you are now inside the Ubuntu VM
 
-> Successful SSH login from Kali to Ubuntu confirms the network path and credentials are working correctly. This also generates an `Accepted password` event in `/var/log/auth.log`.
+Successful SSH login from Kali to Ubuntu confirms the network path and credentials are working correctly. This also generates an `Accepted password` event in `/var/log/auth.log`.
 
 ---
 
 ### 2.2 — Logging Out of SSH
 
-After verifying connectivity, exit the SSH session:
+After verifying connectivity, using `exit` word we can exit the SSH session and getting back to kali machine:
 
 ```bash
 exit
@@ -187,7 +187,7 @@ The terminal shows `logout` and `Connection to 192.168.56.104 closed`, confirmin
 
 SSH authentication events are recorded in real time in Ubuntu's auth log. Understanding this log is critical before and after the attack simulation.
 
-### 3.1 — Tailing the Auth Log
+### 3.1 — Tailing the Auth Log on Ubuntu
 
 On the **Ubuntu VM**, open a terminal and run:
 
@@ -195,7 +195,9 @@ On the **Ubuntu VM**, open a terminal and run:
 sudo tail -f /var/log/auth.log
 ```
 
-> The `-f` flag means **follow** — the terminal will continuously stream new log entries as they are written.
+The `-f` flag means **follow** — the terminal will continuously stream new log entries as they are written.
+
+This command is used to continuously monitor and view the latest authentication logs on the Ubuntu system in real time.
 
 ![SSH Brute Force](./Images/SSH_B_F_7.jpg)
 
@@ -211,7 +213,7 @@ sudo tail -f /var/log/auth.log
 ```
 → Scheduled cron job activity (background noise, not SSH-related)
 
-> Keep this terminal open during the brute force simulation in the next step so you can watch failed login events appear in real time.
+Keep this terminal open during the brute force simulation in the next step so you can watch failed login events appear in real time.
 
 ---
 
@@ -227,7 +229,7 @@ On the **Kali Linux VM**, connect to the Ubuntu machine and intentionally enter 
 ssh vamsi@192.168.56.104
 ```
 
-When prompted for a password, type **incorrect passwords** multiple times. SSH allows 3 attempts per connection by default before closing. Reconnect and repeat to generate multiple failed events.
+When prompted for a password, i entered wrong passwords two times and correct password for the third time. SSH allows 3 attempts per connection by default before closing. Reconnect and repeat to generate multiple failed events.
 
 ![SSH Brute Force](./Images/SSH_B_F_8.jpg)
 
@@ -239,13 +241,14 @@ When prompted for a password, type **incorrect passwords** multiple times. SSH a
 - The Ubuntu welcome banner appears, confirming eventual successful login
 - This pattern — multiple failures followed by success — is the hallmark of a brute force attack
 
-> **Attacker perspective:** In a real brute force attack, tools like `hydra` or `medusa` automate this process, trying thousands of passwords per second. Here we simulate it manually for safe, educational purposes.
+**Attacker perspective:** In a real brute force attack, tools like `hydra` or `medusa` automate this process, trying thousands of passwords per second. Here we simulate it manually for safe, educational purposes.
 
 ---
 
 ## Step 5: Observing Brute Force in Auth Logs
 
-Switch to the **Ubuntu VM** where `auth.log` is being followed. You will see the failed and accepted password events appear in real time.
+Now switch to the **Ubuntu VM** where `auth.log` is being followed. Here we can see the failed and accepted password events appear in real time.
+Since i entered wrong passwords 2 times and entered the correct password for the third time in kali machine. Here we can see that there `two logs` with `Failed Password` and `one log` with `Accepted Password`. 
 
 ```bash
 sudo tail -f /var/log/auth.log
@@ -280,131 +283,22 @@ sudo tail -f /var/log/auth.log
 ```
 → Previous session logout recorded before the new attack sequence began
 
-> **Detection Signal:** Multiple `Failed password` events from the **same source IP** (`192.168.56.103`) within a short time window, followed by an `Accepted password`, is a strong indicator of a successful brute force attack.
+**Detection Signal:** Multiple `Failed password` events from the **same source IP** (`192.168.56.103`) within a short time window, followed by an `Accepted password`, is a strong indicator of a successful brute force attack.
 
 ---
 
-##  Step 6: Install Splunk Universal Forwarder on Ubuntu
-
-The Splunk Universal Forwarder is a lightweight agent that collects log data from the Ubuntu VM and ships it to the Splunk Enterprise server for indexing and analysis.
-
-### 6.1 — Download the Forwarder
-
-On the **Ubuntu VM**, download the Splunk Universal Forwarder `.deb` package from the Splunk website:
-
-```bash
-# Navigate to your downloads or home directory
-cd ~
-
-# Download using wget (replace URL with current version from splunk.com)
-wget -O splunkforwarder.deb "https://download.splunk.com/products/universalforwarder/releases/9.x.x/linux/splunkforwarder-9.x.x-linux-amd64.deb"
-```
-
-> 📥 Alternatively, download the `.deb` file directly from [splunk.com/en_us/download/universal-forwarder.html](https://www.splunk.com/en_us/download/universal-forwarder.html) and transfer it to the VM.
-
-### 6.2 — Install the Forwarder Package
-
-```bash
-# Install the downloaded .deb package
-sudo dpkg -i splunkforwarder*.deb
-```
-
-**What this does:** `dpkg -i` installs the Debian package. The forwarder will be placed in `/opt/splunkforwarder/`.
-
-### 6.3 — Start the Forwarder and Accept License
-
-```bash
-# Start Splunk forwarder and accept the license agreement
-sudo /opt/splunkforwarder/bin/splunk start --accept-license
-```
-
-During the first start, you will be prompted to:
-- Accept the license agreement (handled by `--accept-license`)
-- Create an admin username and password for the forwarder
-
-> Once started, the forwarder runs as a background service and is ready to be configured.
-
----
-
-## Step 7: Configure Splunk Forwarder
-
-Now we point the forwarder at the Splunk Enterprise server and tell it which log files to monitor.
-
-### 7.1 — Add Splunk Server as Forward Destination
-
-On the **Ubuntu VM**, run:
-
-```bash
-sudo /opt/splunkforwarder/bin/splunk add forward-server 192.168.56.xxx:9997
-```
-
-> Replace `192.168.56.xxx` with the actual IP of your Splunk Enterprise server. Port `9997` is the default receiving port for Splunk forwarders.
-
-**What this does:** Registers the Splunk Enterprise instance as the destination where all collected logs will be sent over TCP port `9997`.
-
-### 7.2 — Add Auth Log as a Monitored Source
-
-```bash
-sudo /opt/splunkforwarder/bin/splunk add monitor /var/log/auth.log
-```
-
-**What this does:** Instructs the forwarder to watch `/var/log/auth.log` for new entries and forward them to Splunk in real time. This is the exact log file that records SSH authentication events.
-
-### 7.3 — Restart the Forwarder to Apply Changes
-
-```bash
-sudo /opt/splunkforwarder/bin/splunk restart
-```
-
-**What this does:** Restarts the forwarder service so all configuration changes — the forward destination and the monitored file — take effect immediately.
-
-**Summary of forwarder configuration:**
-
-| Configuration | Value |
-|---|---|
-| Forward destination | `192.168.56.xxx:9997` |
-| Monitored log file | `/var/log/auth.log` |
-| Forwarder install path | `/opt/splunkforwarder/` |
-| Data transmission port | TCP `9997` |
-
----
-
-## Step 8: Configure Splunk Enterprise Receiver
-
-On the **Splunk Enterprise** server, we need to open a receiving port so it can accept data from the Universal Forwarder.
-
-### 8.1 — Enable Receiving Port in Splunk
-
-1. Log in to Splunk Enterprise web interface (default: `http://localhost:8000`)
-2. Navigate to: **Settings** → **Forwarding and Receiving**
-3. Under **Receive Data**, click **Configure Receiving**
-4. Click **New Receiving Port**
-5. Enter port: **`9997`**
-6. Click **Save**
-
-### 8.2 — Why Port 9997?
-
-| Port | Purpose |
-|---|---|
-| `8000` | Splunk Web UI (browser access) |
-| `8089` | Splunk management / REST API |
-| `9997` | **Default forwarder receiving port** — data ingestion |
-
-> Without enabling port `9997` on the Splunk receiver, the Universal Forwarder on Ubuntu will fail to transmit log data and no events will appear in Splunk searches.
-
----
-
-## Step 9: Searching SSH Logs in Splunk
+## Step 6: Searching SSH Logs in Splunk
 
 With logs flowing from Ubuntu into Splunk, we can now run SPL (Splunk Processing Language) queries to find SSH authentication events.
 
-### 9.1 — Search All Indexed Events
+### 6.1 — Search All Indexed Events
 
 Open **Splunk Search & Reporting** and run:
 
 ```spl
 index="main"
 ```
+This query displays all logs from the Ubuntu system stored in the main index in Splunk.
 
 ![SSH Brute Force](./Images/SSH_B_F_10.jpg)
 
@@ -415,15 +309,16 @@ index="main"
 - Left panel shows field discovery: `host`, `source`, `sourcetype`, `pid`, `process`, etc.
 - This confirms the Splunk Universal Forwarder is successfully shipping logs to Splunk Enterprise
 
-> Seeing events here confirms the entire log pipeline — Ubuntu → Forwarder → Splunk — is working correctly.
+Seeing events here confirms the entire log pipeline — Ubuntu → Forwarder → Splunk — is working correctly.
 
 ---
 
-### 9.2 — Search for Failed Password Events
+### 6.2 — Search for Failed Password Events
 
 ```spl
 index=* "Failed password"
 ```
+This query displays all logs with words `Failed password` which is easy to identify failed logins.
 
 ![SSH Brute Force](./Images/SSH_B_F_11.jpg)
 
@@ -439,15 +334,16 @@ index=* "Failed password"
 2026-05-07T09:40:20 vamsi-VirtualBox sshd[7052]: Failed password for vamsi from 192.168.56.103 port 51076 ssh2
 ```
 
-> Both failed attempts originated from `192.168.56.103` (Kali Linux), confirming Splunk captured the simulated brute force events.
+Both failed attempts originated from `192.168.56.103` (Kali Linux), confirming Splunk captured the simulated brute force events.
 
 ---
 
-### 9.3 — Search for Successful Login Events
+### 6.3 — Search for Successful Login Events
 
 ```spl
 index=* "Accepted password"
 ```
+This query displays all logs with words `Accepted password` which is easy to identify Successful logins.
 
 ![SSH Brute Force](./Images/SSH_B_F_12.jpg)
 
@@ -463,23 +359,13 @@ index=* "Accepted password"
 2026-05-07T09:33:03 vamsi-VirtualBox sshd[6726]: Accepted password for vamsi from 192.168.56.103 port 49894 ssh2
 ```
 
-> The second `Accepted password` at `09:41:18` occurring right after two `Failed password` events (at `09:40:20` and `09:41:10`) is the classic brute force success pattern — multiple failures then a successful login.
-
----
-
-
-**Key observations:**
-
-- The failed login events from Kali (`192.168.56.103`) appeared in Splunk with minimal delay after being written to `/var/log/auth.log` on Ubuntu
-- The timeline in Splunk clearly showed a **spike in auth events** during the brute force simulation window
-- The detection query accurately isolated the attacker IP and targeted username
-- The brute force pattern — multiple `Failed password` events followed by an `Accepted password` — was fully visible in Splunk search results
+The second `Accepted password` at `09:41:18` occurring right after two `Failed password` events (at `09:40:20` and `09:41:10`) is the classic brute force success pattern — multiple failures then a successful login.
 
 ---
 
 ## Conclusion
 
-This lab demonstrated a fundamental but critical cybersecurity detection scenario: identifying SSH brute force attacks using a SIEM platform.
+This task demonstrated a fundamental but critical cybersecurity detection scenario: identifying SSH brute force attacks using a SIEM platform.
 
 **Key takeaways:**
 
