@@ -74,12 +74,13 @@ Without a SIEM, an Nmap SYN scan against your network could go completely unnoti
 ---
 
 ## Step 1 — Verifying IP Addresses
+Before any attack or detection work begins, the IP address of each machine must be confirmed. All three machines must be on the same **Host-Only network** (`192.168.56.0/24`) in VirtualBox to communicate with each other.
 
 
 ### Kali Linux — `ip a`
 ![Nmap_SYN_Port_Scan](./Images/Nmap_Attack_1.jpg)
 
-The IP address of the Kali Linux attacker machine was verified using:
+`ip a` (short for `ip address`) displays all network interfaces and their assigned IP addresses on the system. In Kali Linux, this is used to confirm which interface is connected to the lab's Host-Only network so we know the attacker's IP before launching the scan.
 
 ```bash
 ip a
@@ -92,7 +93,7 @@ The output confirmed that the **eth1** interface was assigned the IP address `19
 ### Ubuntu — `ifconfig`
 ![Nmap_SYN_Port_Scan](./Images/Nmap_Attack_2.jpg)
 
-On the Ubuntu victim machine, the IP address was verified using:
+`ifconfig` (interface configuration) displays all active network interfaces with their IP addresses, MAC addresses, and traffic statistics. On the Ubuntu victim machine, this confirms the IP address that will be targeted by the Nmap scan and that it is reachable on the same Host-Only subnet.
 
 ```bash
 ifconfig
@@ -105,7 +106,7 @@ The **enp0s8** interface showed the IP address `192.168.56.104`, confirming it w
 ### Windows Splunk Server — `ipconfig`
 ![Nmap_SYN_Port_Scan](./Images/Nmap_Attack_3.jpg)
 
-On the Windows host running Splunk Enterprise, the IP address was verified using:
+`ipconfig` is the Windows equivalent of `ifconfig`. It displays all active network adapters and their assigned IPs. On the Windows Splunk Enterprise server, this confirms the IP that the Ubuntu Splunk Universal Forwarder must point to on port `9997` to deliver logs.
 
 ```cmd
 ipconfig
@@ -120,6 +121,7 @@ The **VirtualBox Host-Only Network** adapter showed the IP address `192.168.56.1
 Before performing any scanning, it was essential to verify that **Kali Linux** and **Ubuntu** could communicate with each other on the same Host-Only network.
 
 A ping test was performed from Kali Linux to Ubuntu:
+`ping` sends ICMP Echo Request packets to the target IP and waits for ICMP Echo Reply responses. It is the most basic network connectivity test — if Ubuntu replies, the two machines can communicate, and the Nmap scan will reach its target.
 
 ```bash
 ping 192.168.56.104
@@ -130,14 +132,12 @@ ping 192.168.56.104
 
 ## Step 3 — Splunk Universal Forwarder Setup
 ![Nmap_SYN_Port_Scan](./Images/Nmap_Attack_5.jpg)
-
-The **Splunk Universal Forwarder** was pre-installed on Ubuntu at `/opt/splunkforwarder/`. The forward server pointing to the Splunk Enterprise instance on Windows (`192.168.56.1:9997`) had already been configured.
-
-
+The **Splunk Universal Forwarder** had already been installed on the Ubuntu VM at `/opt/splunkforwarder/` before this lab session. This step verifies the existing installation and confirms the forward server configuration was in place.
 
 ---
 
 ## Step 4 — Initial Problem: Inactive Forward Server
+To verify whether the Universal Forwarder was successfully communicating with the Splunk Enterprise server, the following command was run from the forwarder binary directory on Ubuntu:
 
 ### Problem Encountered
 To verify the current forwarding status, the following command was run from the Splunk forwarder binary directory:
@@ -148,16 +148,17 @@ sudo /opt/splunkforwarder/bin/splunk list forward-server
 
 
 When the forwarding status was checked, the output showed:
+`list forward-server` queries the current state of all configured forwarding destinations. It reports whether each destination is **active** (reachable, data is flowing) or **inactive** (configured but unreachable).
 ![Nmap_SYN_Port_Scan](./Images/Nmap_Attack_6.jpg)
 ### Root Cause
 
-The forward server was **configured but inactive**, meaning the Splunk Universal Forwarder on Ubuntu was **unable to reach** the Splunk Enterprise server on Windows. After investigation, it was determined that **Windows Defender Firewall** was blocking all inbound TCP traffic on port **9997**, which is the default port used by Splunk forwarders to send data.
+After investigation, the root cause was confirmed: **Windows Defender Firewall** was blocking all inbound TCP traffic on port `9997`. Even though the Splunk Enterprise server was running and listening, the Windows firewall was silently dropping all connection attempts from the Ubuntu forwarder before they could reach Splunk.
 
 ---
 
 ## Step 5 — Fixing the Issue: Windows Defender Firewall Configuration
 
-To resolve the connectivity issue, a new **Inbound Rule** was created in **Windows Defender Firewall with Advanced Security** to allow TCP traffic on port 9997.
+To resolve the blocked connection, a new **Inbound Firewall Rule** was created in **Windows Defender Firewall with Advanced Security** to explicitly allow TCP traffic on port `9997`.
 
 ### Step-by-Step Firewall Rule Creation
 
@@ -249,12 +250,14 @@ Click **Finish** to create the rule.
 ---
 
 ## Step 6 — Restarting Services
+After creating the firewall rule, both Splunk services need to be restarted to establish a fresh connection with the newly opened port.
 
 ### Restart Splunk Enterprise (Windows)
 
-After creating the firewall rule, the **Splunk Enterprise** service was restarted from the Windows **Services** application (`services.msc`) to ensure the changes took effect and the server was ready to receive forwarded logs.
+On Windows, open **Services** (`services.msc`), locate **Splunk** in the list, right-click, and select **Restart**. This forces Splunk Enterprise to reinitialize its receiver and begin accepting inbound connections on port `9997`.
 
 ### Restart Splunk Universal Forwarder (Ubuntu)
+`splunk restart` gracefully stops the forwarder process and starts it again. This causes the forwarder to re-initiate the TCP connection to `192.168.56.1:9997`. With the Windows firewall rule now in place, this connection attempt will succeed.
 
 The Splunk forwarder was restarted on Ubuntu using:
 ![Nmap_SYN_Port_Scan](./Images/Nmap_Attack_15.jpg)
@@ -267,7 +270,7 @@ sudo ./splunk restart
 ## Step 7 — Successful Connection Verification
 ![Nmap_SYN_Port_Scan](./Images/Nmap_Attack_16.jpg)
 
-After restarting both services, the forward server status was rechecked:
+After restarting both services, the forward server status was re-checked to confirm the connection was established.
 
 ```bash
 sudo ./splunk list forward-server
@@ -282,13 +285,14 @@ The forward server status changed from **inactive → active**, confirming that 
 ## Step 8 — Performing the Nmap SYN Scan
 ![Nmap_SYN_Port_Scan](./Images/Nmap_Attack_17.jpg)
 
-With the logging infrastructure confirmed to be working, the Nmap SYN scan was launched from **Kali Linux** against the **Ubuntu victim machine**.
+With the complete logging and forwarding infrastructure confirmed to be working, the Nmap SYN scan was launched from **Kali Linux** against the **Ubuntu victim machine**.
 
 ### Command Used
 
 ```bash
 sudo nmap -sS 192.168.56.104
 ```
+On the Kali Linux terminal, run `sudo nmap -sS 192.168.56.104`. The scan probes all 1,000 most common ports. Wait for it to complete (typically 5–15 seconds on a local network) and the results table will be displayed.
 
 ### How a SYN Scan Works
 
@@ -328,6 +332,8 @@ SYN scans require **root/sudo** privileges because they require raw socket acces
 
 The 997 filtered ports returned no response, indicating they are behind a firewall.
 
+**Detection insight:** While port 22 responded (open) and some ports sent RST (closed), the **997 filtered ports** each generated a `[UFW BLOCK]` entry in Ubuntu's syslog. This rapid burst of blocked SYN packets — all from `192.168.56.103`, all within milliseconds of each other, all to different destination ports — is exactly what Splunk will surface as evidence of a port scan.
+
 ---
 
 ## Step 9 — Log Collection Process
@@ -355,6 +361,7 @@ Each SYN packet to a different destination port generated a **separate log entry
 ---
 
 ## Step 10 — Searching Logs in Splunk Enterprise
+With all scan-related logs indexed in Splunk, SPL (Splunk Processing Language) queries were used to find and analyze the scanning events.
 ![Nmap_SYN_Port_Scan](./Images/Nmap_Attack_18.jpg)
 
 
@@ -367,14 +374,6 @@ In the Splunk Search & Reporting app, the following search was used to find all 
 ```
 
 This returned **20 events** within the last 24 hours, all timestamped around the time the scan was performed (`2026-05-06T11:12:xx`).
-
-### Search by Source Log File
-
-```spl
-source="/var/log/syslog"
-```
-
-This search confirmed all logs were sourced from the Ubuntu machine's syslog file, forwarded by the Universal Forwarder.
 
 ---
 
