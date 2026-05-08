@@ -37,15 +37,6 @@ The `sudo apt update` command refreshes the package index, ensuring that the lat
 
 ![FTP Brute Force - VSFTPD Installation](./Images/FTP_B_F_1.png)
 
-The terminal output in the screenshot confirms the successful installation of VSFTPD version **3.0.5-0ubuntu3.1** on the Ubuntu machine. Key details visible in the output:
-
-- **Package index refresh** was completed successfully before installation.
-- The system identified that **vsftpd** was the only new package to be installed, with a size of **120 kB**.
-- The package was downloaded from `http://in.archive.ubuntu.com/ubuntu` (Indian Ubuntu mirror, consistent with the lab being run in India).
-- The installer **unpacked and configured** the package: `Setting up vsftpd (3.0.5-0ubuntu3.1)`.
-- A **systemd symlink** was automatically created at `/etc/systemd/system/multi-user.target.wants/vsftpd.service`, which means VSFTPD is registered as a system service and will be manageable through `systemctl`.
-- The `man-db` trigger was also processed, updating the manual pages database.
-
 After this step, VSFTPD is installed but not yet active or configured for our use case. The next steps handle enabling and starting the service.
 
 ---
@@ -65,16 +56,9 @@ The `systemctl enable vsftpd` command configures VSFTPD to **start automatically
 
 ![FTP Brute Force - Enable and Start VSFTPD](./Images/FTP_B_F_2.png)
 
-The terminal output confirms:
+**Tip:** To verify the service is running, use `sudo systemctl status vsftpd`. A `active (running)` status in green confirms the service is healthy.
 
-- **`sudo systemctl enable vsftpd`** ran successfully. The system output reads:  
-  `Synchronizing state of vsftpd.service with SysV service script...`  
-  `Executing: /usr/lib/systemd/systemd-sysv-install enable vsftpd`  
-  This tells us that systemd synchronized the VSFTPD service state using the legacy SysV compatibility layer, and the service is now **enabled at boot**.
-
-- **`sudo systemctl start vsftpd`** was then run. No output after this command indicates it started **without errors** — in Linux, silence on `start` commands is a sign of success.
-
-> 💡 **Tip:** To verify the service is running, use `sudo systemctl status vsftpd`. A `active (running)` status in green confirms the service is healthy.
+![FTP Brute Force - Enable and Start VSFTPD](./Images/FTP_B_F_22.png)
 
 ---
 
@@ -176,16 +160,6 @@ After adding the port 21 rule, we verify the updated firewall configuration.
 
 The updated firewall rules now show:
 
-| To         | Action | From       |
-|------------|--------|------------|
-| 22         | ALLOW  | Anywhere   |
-| 80         | ALLOW  | Anywhere   |
-| 443        | ALLOW  | Anywhere   |
-| **21/tcp** | **ALLOW** | **Anywhere** |
-| 22 (v6)    | ALLOW  | Anywhere (v6) |
-| 80 (v6)    | ALLOW  | Anywhere (v6) |
-| 443 (v6)   | ALLOW  | Anywhere (v6) |
-| **21/tcp (v6)** | **ALLOW** | **Anywhere (v6)** |
 
 The **21/tcp** rule is now visible in both IPv4 and IPv6 rulesets. The Ubuntu FTP server is now fully accessible from any machine on the network, including our Kali attacker machine. The lab environment is now ready for connectivity testing.
 
@@ -213,20 +187,6 @@ Password: kali
 ### What the Screenshot Shows
 
 ![FTP Brute Force - FTP Login from Kali](./Images/FTP_B_F_7.png)
-
-The FTP session output shows:
-
-```
-Connected to 192.168.56.104.
-220 (vsFTPd 3.0.5)
-Name (192.168.56.104:vamsi): vamsi
-331 Please specify the password.
-Password:
-230 Login successful.
-Remote system type is UNIX.
-Using binary mode to transfer files.
-ftp>
-```
 
 Breaking this down line by line:
 - **`Connected to 192.168.56.104`** — TCP connection was successfully established
