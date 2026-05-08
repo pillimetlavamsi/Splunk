@@ -35,7 +35,7 @@ The `sudo apt update` command refreshes the package index, ensuring that the lat
 
 ### What the Screenshot Shows
 
-![FTP Brute Force - VSFTPD Installation](./Images/FTP_B_F_1.jpg)
+![FTP Brute Force - VSFTPD Installation](./Images/FTP_B_F_1.png)
 
 The terminal output in the screenshot confirms the successful installation of VSFTPD version **3.0.5-0ubuntu3.1** on the Ubuntu machine. Key details visible in the output:
 
@@ -63,7 +63,7 @@ The `systemctl enable vsftpd` command configures VSFTPD to **start automatically
 
 ### What the Screenshot Shows
 
-![FTP Brute Force - Enable and Start VSFTPD](./Images/FTP_B_F_2.jpg)
+![FTP Brute Force - Enable and Start VSFTPD](./Images/FTP_B_F_2.png)
 
 The terminal output confirms:
 
@@ -90,7 +90,7 @@ This command uses `netstat` to display all active network connections and listen
 
 ### What the Screenshot Shows
 
-![FTP Brute Force - Netstat Port 21](./Images/FTP_B_F_3.jpg)
+![FTP Brute Force - Netstat Port 21](./Images/FTP_B_F_3.png)
 
 The output confirms:
 
@@ -119,7 +119,7 @@ sudo ufw status
 
 ### What the Screenshot Shows
 
-![FTP Brute Force - UFW Status Before](./Images/FTP_B_F_4.jpg)
+![FTP Brute Force - UFW Status Before](./Images/FTP_B_F_4.png)
 
 The output shows:
 - **Status: active** — The firewall is enabled and enforcing rules.
@@ -145,7 +145,7 @@ This command creates a UFW rule that permits incoming **TCP connections on port 
 
 ### What the Screenshot Shows
 
-![FTP Brute Force - UFW Allow 21/tcp](./Images/FTP_B_F_5.jpg)
+![FTP Brute Force - UFW Allow 21/tcp](./Images/FTP_B_F_5.png)
 
 The output shows:
 ```
@@ -172,7 +172,7 @@ After adding the port 21 rule, we verify the updated firewall configuration.
 
 ### What the Screenshot Shows
 
-![FTP Brute Force - UFW Status After](./Images/FTP_B_F_6.jpg)
+![FTP Brute Force - UFW Status After](./Images/FTP_B_F_6.png)
 
 The updated firewall rules now show:
 
@@ -212,7 +212,7 @@ Password: kali
 
 ### What the Screenshot Shows
 
-![FTP Brute Force - FTP Login from Kali](./Images/FTP_B_F_7.jpg)
+![FTP Brute Force - FTP Login from Kali](./Images/FTP_B_F_7.png)
 
 The FTP session output shows:
 
@@ -253,7 +253,7 @@ The `/var/log/auth.log` file records all **authentication-related events** on th
 
 ### What the Screenshot Shows
 
-![FTP Brute Force - auth.log Before Attack](./Images/FTP_B_F_8.jpg)
+![FTP Brute Force - auth.log Before Attack](./Images/FTP_B_F_8.png)
 
 The log entries visible in this screenshot are from **before the brute force attack** and show normal system activity:
 
@@ -279,7 +279,7 @@ A **wordlist** (also called a dictionary file) is a plain text file containing a
 
 ### What the Screenshot Shows
 
-![FTP Brute Force - Password Wordlist](./Images/FTP_B_F_9.jpg)
+![FTP Brute Force - Password Wordlist](./Images/FTP_B_F_9.png)
 
 The screenshot shows the contents of `passwords.txt` as displayed by `cat`:
 
@@ -342,7 +342,7 @@ hydra -l vamsi -P passwords.txt ftp://192.168.56.104
 
 ### What the Screenshot Shows
 
-![FTP Brute Force - Hydra Attack](./Images/FTP_B_F_10.jpg)
+![FTP Brute Force - Hydra Attack](./Images/FTP_B_F_10.png)
 
 The Hydra output reveals the complete attack execution:
 
@@ -372,7 +372,7 @@ Breaking down this output:
 
 ### What the Screenshot Shows
 
-![FTP Brute Force - Login with Cracked Password](./Images/FTP_B_F_11.jpg)
+![FTP Brute Force - Login with Cracked Password](./Images/FTP_B_F_11.png)
 
 This screenshot shows two key events:
 
@@ -415,7 +415,7 @@ Once logged into the FTP server, the `ls` command lists all files and directorie
 
 ### What the Screenshot Shows
 
-![FTP Brute Force - FTP Directory Listing](./Images/FTP_B_F_12.jpg)
+![FTP Brute Force - FTP Directory Listing](./Images/FTP_B_F_12.png)
 
 The FTP session shows a connection issue with **Extended Passive Mode (EPSV)** before falling back to **EPRT** mode successfully. This is a common occurrence in NAT or VirtualBox network environments where passive mode data channels cannot be directly established, but the fallback still allows the listing to proceed.
 
@@ -443,7 +443,7 @@ The `get` command in FTP downloads (retrieves) a specified file from the **remot
 
 ### What the Screenshot Shows
 
-![FTP Brute Force - FTP GET Download](./Images/FTP_B_F_13.jpg)
+![FTP Brute Force - FTP GET Download](./Images/FTP_B_F_13.png)
 
 The FTP output shows:
 
@@ -483,7 +483,7 @@ After the FTP `get` operation, we verify the downloaded file now exists on the K
 
 ### What the Screenshot Shows
 
-![FTP Brute Force - Files on Kali After Download](./Images/FTP_B_F_14.jpg)
+![FTP Brute Force - Files on Kali After Download](./Images/FTP_B_F_14.png)
 
 The `ls` output on Kali shows the home directory contents. Notice the presence of:
 - **`wordlist.txt`** — successfully downloaded from the victim FTP server
@@ -507,7 +507,7 @@ To demonstrate **file upload (PUT)** via FTP, we first create a new file on the 
 
 ### What the Screenshot Shows
 
-![FTP Brute Force - Create Upload File on Kali](./Images/FTP_B_F_15.jpg)
+![FTP Brute Force - Create Upload File on Kali](./Images/FTP_B_F_15.png)
 
 The screenshot shows:
 1. **`nano vamsi_ftp.txt`** — the nano text editor was opened to create a new file named `vamsi_ftp.txt`. Content was added and saved.
@@ -529,7 +529,7 @@ The `put` command in FTP uploads (sends) a file from the **local machine** (Kali
 
 ### What the Screenshot Shows
 
-![FTP Brute Force - FTP PUT Upload](./Images/FTP_B_F_16.jpg)
+![FTP Brute Force - FTP PUT Upload](./Images/FTP_B_F_16.png)
 
 The FTP output shows:
 
@@ -568,7 +568,7 @@ Back on the Ubuntu victim machine, we verify that the file uploaded from Kali is
 
 ### What the Screenshot Shows
 
-![FTP Brute Force - Confirm Upload on Ubuntu](./Images/FTP_B_F_17.jpg)
+![FTP Brute Force - Confirm Upload on Ubuntu](./Images/FTP_B_F_17.png)
 
 The `ls` output on the Ubuntu machine shows the home directory of the user `vamsi`. Highlighted in the listing is **`vamsi_ftp.txt`** — the file that was just uploaded from the Kali attacker machine via FTP.
 
@@ -590,7 +590,7 @@ After the Hydra brute force attack, we re-examine the Ubuntu authentication log 
 
 ### What the Screenshot Shows
 
-![FTP Brute Force - auth.log After Attack](./Images/FTP_B_F_18.jpg)
+![FTP Brute Force - auth.log After Attack](./Images/FTP_B_F_18.png)
 
 This is the most critical log evidence screenshot in the entire lab. The first log entry reads:
 
@@ -629,7 +629,7 @@ After the Splunk Universal Forwarder was configured to ship `/var/log/auth.log` 
 
 ### What the Screenshot Shows
 
-![FTP Brute Force - Splunk Events Dashboard](./Images/FTP_B_F_19.jpg)
+![FTP Brute Force - Splunk Events Dashboard](./Images/FTP_B_F_19.png)
 
 The Splunk search interface shows a wealth of information:
 
