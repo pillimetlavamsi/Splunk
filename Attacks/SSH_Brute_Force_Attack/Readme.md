@@ -1,3 +1,4 @@
+# SSH Brute Force Attack
 ## Objective
 
 This lab simulates a real-world SSH brute force attack scenario. The key learning goals are:
