@@ -9,7 +9,7 @@ This lab covers the full attack lifecycle — from setting up the FTP server, th
 ## Lab Environment
 
 | Machine            | Role                       | IP Address       |
-|--------------------|----------------------------|-----------------------|------------------|
+|--------------------|----------------------------|------------------|
 | **Kali Linux**     | Attacker Machine           |  192.168.56.103   |
 | **Ubuntu VM**      | Victim           | 192.168.56.104   |
 | **Splunk Server**  | SIEM Monitoring Server     |  192.168.56.1  |
