@@ -17,11 +17,11 @@ Here we performed a complete ARP Spoofing / MITM attack in a fully controlled vi
 
 | Role | OS | IP Address | Notes |
 |---|---|---|---|
-| 🔴 Attacker | Kali Linux | `10.78.39.184` | Runs Bettercap as `root` |
-| 🟡 Victim | Ubuntu (VirtualBox) | `10.78.39.240` | Browses web normally |
-| 🔵 SIEM / Monitor | Windows Server + Splunk | `10.78.39.55` | Collects logs from Ubuntu |
-| 🌐 Gateway | Router | `10.78.39.35` | Default gateway for all machines |
-| 🌐 Subnet | — | `10.78.39.0/24` | `/24` subnet mask: `255.255.255.0` |
+| Attacker | Kali Linux | `10.78.39.184` | Runs Bettercap as `root` |
+| Victim | Ubuntu (VirtualBox) | `10.78.39.240` | Browses web normally |
+| SIEM / Monitor | Windows Server + Splunk | `10.78.39.55` | Collects logs from Ubuntu |
+| Gateway | Router | `10.78.39.35` | Default gateway for all machines |
+| Subnet | — | `10.78.39.0/24` | `/24` subnet mask: `255.255.255.0` |
 
 ---
 
