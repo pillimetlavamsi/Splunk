@@ -37,9 +37,9 @@ Without a SIEM, an Nmap SYN scan against your network could go completely unnoti
 
 | Role | Operating System | IP Address |
 |------|-----------------|------------|
-| 🔴 Attacker | Kali Linux | `192.168.56.103` |
-| 🟡 Victim / Log Source | Ubuntu (with Splunk Universal Forwarder) | `192.168.56.104` |
-| 🟢 SIEM Server | Windows (Splunk Enterprise) | `192.168.56.1` |
+| Attacker | Kali Linux | `192.168.56.103` |
+| Victim / Log Source | Ubuntu (with Splunk Universal Forwarder) | `192.168.56.104` |
+| SIEM Server | Windows (Splunk Enterprise) | `192.168.56.1` |
 
 ---
 
