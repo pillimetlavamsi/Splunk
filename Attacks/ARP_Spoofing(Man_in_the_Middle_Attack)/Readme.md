@@ -1,3 +1,4 @@
+# ARP Spoofing(Man in the Middle Attack)
 ## Introduction
 Every device on a local network needs to know the **physical address (MAC address)** of another device before it can send data to it. ARP (Address Resolution Protocol) is the system that handles this lookup "Hey, who has this IP? Tell me your MAC address." The problem is, ARP was designed with **zero security** it blindly trusts whoever answers, with no verification. An attacker can exploit this by sending **fake ARP replies**, telling both the victim and the router: "Hey, my MAC address is the one you are looking for." Now all traffic flows through the attacker's machine instead.
 
@@ -94,28 +95,6 @@ AFTER ARP SPOOFING (MITM):
 ```
 
 The attacker machine acts as a **transparent relay**. IP forwarding is enabled so the victim's internet continues to work, but every packet passes through the attacker first.
-
----
-
-## Network Topology
-
-```
-                        ┌─────────────────────┐
-                        │   ROUTER / GATEWAY  │
-                        │    10.78.39.35       │
-                        └──────────┬──────────┘
-                                   │
-                    ───────────────┼───────────────────
-                    │              │                   │
-          ┌─────────┴──────┐  ┌───┴────────────┐  ┌──┴─────────────────┐
-          │ KALI (Attacker)│  │ UBUNTU (Victim) │  │ WINDOWS (Splunk)   │
-          │ 10.78.39.184   │  │ 10.78.39.240   │  │ 10.78.39.55        │
-          │ Bettercap      │  │ Firefox Browser │  │ Splunk Enterprise  │
-          └────────────────┘  └────────────────┘  └────────────────────┘
-                   ↑                   │
-                   └────── MITM ───────┘
-              (All victim traffic intercepted)
-```
 
 ---
 
